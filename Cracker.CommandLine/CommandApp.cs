@@ -16,6 +16,13 @@ namespace Cracker.CommandLine
             _cmds = new Dictionary<string, CommandConfiguration>();
         }
 
+        /// <summary>
+        /// 添加命令
+        /// </summary>
+        /// <typeparam name="TCommand">命令</typeparam>
+        /// <param name="name">命令名称，唯一</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public CommandConfiguration Add<TCommand>(string name) where TCommand : CommandBase, new()
         {
             if (_cmds.ContainsKey(name)) throw new Exception($"已存在{name}的命令");
@@ -24,6 +31,13 @@ namespace Cracker.CommandLine
             return conf;
         }
 
+        /// <summary>
+        /// 启动
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        /// <exception cref="DirectoryNotFoundException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task StartAsync(string[] args)
         {
             try
@@ -76,40 +90,24 @@ namespace Cracker.CommandLine
                                 arguments.Add(skipArgs[i]);
                             }
                         }
-                        foreach (var prop in type.GetProperties())
+                        CommandBase instance = value.Instance;
+                        // 泛型命令
+                        if (type.BaseType!.IsGenericType)
                         {
-                            var optionAttr = prop.GetCustomAttribute<CliOptionAttribute>();
-                            if (optionAttr != null && options.TryGetValue(optionAttr.Name, out var optionValue))
+                            var genericType = type.BaseType.GetGenericArguments()[0];
+                            var genericInstance = Activator.CreateInstance(genericType);
+                            if (genericInstance != null)
                             {
-                                var val = ConvertHelper.To(optionValue, prop.PropertyType);
-                                prop.SetValue(value.Instance, val);
-                                continue;
-                            }
-                            var argAttr = prop.GetCustomAttribute<CliArgumentAttribute>();
-                            if (argAttr != null)
-                            {
-                                if (arguments.Count >= 1 + argAttr.Position)
-                                {
-                                    if (prop.PropertyType.IsArray)
-                                    {
-                                        // 数组参数取值：从位置开始直至末尾
-                                        string[] strs = [.. arguments[argAttr.Position..]];
-                                        prop.SetValue(value.Instance, strs);
-                                    }
-                                    else
-                                    {
-                                        var val = ConvertHelper.To(arguments[argAttr.Position], prop.PropertyType);
-                                        prop.SetValue(value.Instance, val);
-                                    }
-                                }
-                                else if (argAttr.Required)
-                                {
-                                    throw new ArgumentNullException(prop.Name, "参数是必须的");
-                                }
+                                LoadParams(arguments, options, genericType, genericInstance);
+                                var receiveProp = type.GetProperty(nameof(CommandBase<object>.Receive));
+                                receiveProp?.SetValue(instance, genericInstance);
                             }
                         }
-
-                        await value.Instance.ExecuteAsync(value.Context ?? new CommandContext());
+                        else
+                        {
+                            LoadParams(arguments, options, type, instance);
+                        }
+                        await instance.ExecuteAsync(value.Context ?? new CommandContext());
                     }
                 }
                 else
@@ -120,6 +118,50 @@ namespace Cracker.CommandLine
             catch (Exception ex)
             {
                 await Console.Out.WriteLineAsync(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 加载参数
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <param name="options"></param>
+        /// <param name="type"></param>
+        /// <param name="instance"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        private static void LoadParams(List<string> arguments, Dictionary<string, string> options, Type type, object instance)
+        {
+            foreach (var prop in type.GetProperties())
+            {
+                var optionAttr = prop.GetCustomAttribute<CliOptionAttribute>();
+                if (optionAttr != null && options.TryGetValue(optionAttr.Name, out var optionValue))
+                {
+                    var val = ConvertHelper.To(optionValue, prop.PropertyType);
+                    prop.SetValue(instance, val);
+                    continue;
+                }
+                var argAttr = prop.GetCustomAttribute<CliArgumentAttribute>();
+                if (argAttr != null)
+                {
+                    if (arguments.Count >= 1 + argAttr.Position)
+                    {
+                        if (prop.PropertyType.IsArray)
+                        {
+                            // 数组参数取值：从位置开始直至末尾
+                            string[] strs = [.. arguments[argAttr.Position..]];
+                            prop.SetValue(instance, strs);
+                        }
+                        else
+                        {
+                            var val = ConvertHelper.To(arguments[argAttr.Position], prop.PropertyType);
+                            prop.SetValue(instance, val);
+                        }
+                    }
+                    else if (argAttr.Required)
+                    {
+                        throw new ArgumentNullException(prop.Name, "参数是必须的");
+                    }
+                }
             }
         }
     }

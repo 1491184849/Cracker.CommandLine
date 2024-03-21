@@ -1,6 +1,6 @@
-﻿using System.Reflection;
+﻿using Cracker.CommandLine.Attributes;
+using System.Reflection;
 using System.Text;
-using Cracker.CommandLine.Attributes;
 
 namespace Cracker.CommandLine.Models
 {
@@ -53,6 +53,10 @@ namespace Cracker.CommandLine.Models
         private string GetCommandHelpInformation()
         {
             var type = Instance.GetType();
+            if (type.BaseType != null && type.BaseType.IsGenericType)
+            {
+                type = type.BaseType!.GetGenericArguments()[0]!;
+            }
             var options = new Dictionary<string, string>();
             var arguments = new Dictionary<int, string>();
             var sb = new StringBuilder();
