@@ -10,6 +10,7 @@ namespace Cracker.CommandLine
         private readonly IDictionary<string, CommandConfiguration> _cmds;
         private readonly string[] _helpOptionNames = ["-h", "--help"];
         private readonly string[] _versionOptionNames = ["-v", "--version"];
+        private const string VERSION = "v1.0.1";
 
         public CommandApp()
         {
@@ -59,12 +60,12 @@ namespace Cracker.CommandLine
                         }
                         else if (_versionOptionNames.Contains(args[0]))
                         {
-                            Console.WriteLine("v1.0.0");
+                            Console.WriteLine(VERSION);
                         }
                     }
                     else
                     {
-                        if (!_cmds.TryGetValue(args[0], out CommandConfiguration? value) || value == null) throw new DirectoryNotFoundException($"命令{args[0]}找不到");
+                        if (!_cmds.TryGetValue(args[0], out CommandConfiguration? value)) throw new DirectoryNotFoundException($"命令{args[0]}找不到");
                         var type = value.Instance.GetType();
                         var skipArgs = args.Skip(1).ToArray();
                         var arguments = new List<string>();
