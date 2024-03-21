@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34701.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cracker.CommandLine.App", "Cracker.CommandLine.App\Cracker.CommandLine.App.csproj", "{93161A6B-EB52-48F2-BE30-EB1D0A930C21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cracker.CommandLine", "Cracker.CommandLine\Cracker.CommandLine.csproj", "{1B91C04E-3C1D-4FEE-81A1-21AB2D820108}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{93161A6B-EB52-48F2-BE30-EB1D0A930C21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93161A6B-EB52-48F2-BE30-EB1D0A930C21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93161A6B-EB52-48F2-BE30-EB1D0A930C21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93161A6B-EB52-48F2-BE30-EB1D0A930C21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B91C04E-3C1D-4FEE-81A1-21AB2D820108}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B91C04E-3C1D-4FEE-81A1-21AB2D820108}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B91C04E-3C1D-4FEE-81A1-21AB2D820108}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B91C04E-3C1D-4FEE-81A1-21AB2D820108}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {06E40E31-57DB-44A2-B137-292E15873A0D}
+	EndGlobalSection
+EndGlobal

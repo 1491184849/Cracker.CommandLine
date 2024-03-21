@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Cracker.CommandLine.App": {
+      "commandName": "Project",
+      "commandLineArgs": "-h"
+    }
+  }
+}
