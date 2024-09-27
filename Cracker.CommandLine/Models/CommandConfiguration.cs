@@ -1,4 +1,5 @@
 ﻿using Cracker.CommandLine.Attributes;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 
@@ -6,22 +7,60 @@ namespace Cracker.CommandLine.Models
 {
     public class CommandConfiguration
     {
+        /// <summary>
+        /// 加载命令时，自动生成的帮助信息
+        /// </summary>
+        private string? _helpInformation;
+
         public CommandConfiguration(string name, CommandBase instance)
         {
+            if (name.StartsWith('-'))
+            {
+                throw new Exception("命令不允许'-'开头");
+            }
             Name = name;
             Instance = instance;
-            HelpInformation = GetCommandHelpInformation();
+            _helpInformation = GenerateCommandHelpInformation();
         }
 
+        /// <summary>
+        /// 命令描述
+        /// </summary>
+        /// <param name="description"></param>
+        /// <returns></returns>
         public CommandConfiguration WithDescription(string description)
         {
             Description = description;
+            _helpInformation = GenerateCommandHelpInformation();
             return this;
         }
 
+        /// <summary>
+        /// 初始数据
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public CommandConfiguration WithData(object data)
         {
             Context = new CommandContext { Data = data };
+            return this;
+        }
+
+        /// <summary>
+        /// 增加子命令
+        /// </summary>
+        /// <param name="func"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception">子命令不能超过3个</exception>
+        public CommandConfiguration Child(Func<CommandConfiguration> func)
+        {
+            Children ??= [];
+            if (Children.Count >= 3)
+            {
+                throw new Exception("子命令不能超过3个");
+            }
+            var subCommandConfiguration = func.Invoke();
+            Children.TryAdd(subCommandConfiguration.Name, subCommandConfiguration);
             return this;
         }
 
@@ -38,19 +77,20 @@ namespace Cracker.CommandLine.Models
         /// <summary>
         /// 命令描述
         /// </summary>
-        public string Description { get; private set; }
+        public string? Description { get; private set; }
 
         /// <summary>
         /// 上下文
         /// </summary>
-        public CommandContext Context { get; private set; }
+        [NotNull]
+        public CommandContext? Context { get; private set; }
 
         /// <summary>
-        /// 帮助信息
+        /// 子命令
         /// </summary>
-        public string HelpInformation { get; private set; }
+        public Dictionary<string, CommandConfiguration>? Children { get; private set; }
 
-        private string GetCommandHelpInformation()
+        private string GenerateCommandHelpInformation()
         {
             var type = Instance.GetType();
             if (type.BaseType != null && type.BaseType.IsGenericType)
@@ -60,6 +100,7 @@ namespace Cracker.CommandLine.Models
             var options = new Dictionary<string, string>();
             var arguments = new Dictionary<int, string>();
             var sb = new StringBuilder();
+            sb.AppendFormat("描述：\t{0,-20}\r\n", Description);
             foreach (var prop in type.GetProperties())
             {
                 var optionAttr = prop.GetCustomAttribute<CliOptionAttribute>();
@@ -81,7 +122,7 @@ namespace Cracker.CommandLine.Models
                 sb.AppendLine("参数：");
                 foreach (var item in arguments.OrderBy(x => x.Key))
                 {
-                    sb.AppendFormat("\t[{0}]\t{1}\r\n", item.Key + 1, item.Value);
+                    sb.AppendFormat("\t{0,-20}\t{1}\r\n", string.Concat("位置", item.Key + 1), item.Value);
                 }
             }
             if (options.Count > 0)
@@ -93,6 +134,11 @@ namespace Cracker.CommandLine.Models
                 }
             }
             return sb.ToString();
+        }
+
+        public string? GetHelp()
+        {
+            return _helpInformation;
         }
     }
 }

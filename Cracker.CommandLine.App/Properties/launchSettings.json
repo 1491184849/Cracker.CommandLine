@@ -2,7 +2,7 @@
   "profiles": {
     "Cracker.CommandLine.App": {
       "commandName": "Project",
-      "commandLineArgs": "-h"
+      "commandLineArgs": "invoke uuid test -h"
     }
   }
 }
