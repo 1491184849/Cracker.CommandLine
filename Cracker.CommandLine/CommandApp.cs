@@ -56,6 +56,7 @@ namespace Cracker.CommandLine
                             {
                                 Console.WriteLine("\t{0,-20}\t{1}", item.Key, item.Value.Description);
                             }
+                            Console.WriteLine("\r\n运行 {程序名} [command] --help，获取有关命令的详细信息。");
                         }
                         else if (_versionOptionNames.Contains(args[0]))
                         {
@@ -93,10 +94,18 @@ namespace Cracker.CommandLine
             foreach (var prop in type.GetProperties())
             {
                 var optionAttr = prop.GetCustomAttribute<CliOptionAttribute>();
-                if (optionAttr != null && options.TryGetValue(optionAttr.Name, out var optionValue))
+                if (optionAttr != null)
                 {
-                    var val = ConvertHelper.To(optionValue, prop.PropertyType);
-                    prop.SetValue(instance, val);
+                    if (options.TryGetValue(optionAttr.Name, out var optionValue))
+                    {
+                        var val = ConvertHelper.To(optionValue, prop.PropertyType);
+                        prop.SetValue(instance, val);
+                    }
+                    else if (optionAttr.DefaultValue != null)
+                    {
+                        var val = ConvertHelper.To(optionAttr.DefaultValue, prop.PropertyType);
+                        prop.SetValue(instance, val);
+                    }
                     continue;
                 }
                 var argAttr = prop.GetCustomAttribute<CliArgumentAttribute>();

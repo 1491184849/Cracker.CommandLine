@@ -97,14 +97,14 @@ namespace Cracker.CommandLine.Models
             {
                 type = type.BaseType!.GetGenericArguments()[0]!;
             }
-            var options = new Dictionary<string, string>();
+            var options = new Dictionary<string, CliOptionAttribute>();
             var arguments = new Dictionary<int, string>();
             var sb = new StringBuilder();
             sb.AppendFormat("描述：\t{0,-20}\r\n", Description);
             foreach (var prop in type.GetProperties())
             {
                 var optionAttr = prop.GetCustomAttribute<CliOptionAttribute>();
-                if (optionAttr != null) options.TryAdd(optionAttr.Name, optionAttr.Description);
+                if (optionAttr != null) options.TryAdd(optionAttr.Name, optionAttr);
                 var argAttr = prop.GetCustomAttribute<CliArgumentAttribute>();
                 if (argAttr != null)
                 {
@@ -119,7 +119,7 @@ namespace Cracker.CommandLine.Models
             }
             if (arguments.Count > 0)
             {
-                sb.AppendLine("参数：");
+                sb.AppendLine("\r\n参数：");
                 foreach (var item in arguments.OrderBy(x => x.Key))
                 {
                     sb.AppendFormat("\t{0,-20}\t{1}\r\n", string.Concat("位置", item.Key + 1), item.Value);
@@ -127,10 +127,23 @@ namespace Cracker.CommandLine.Models
             }
             if (options.Count > 0)
             {
-                sb.AppendLine("选项：");
+                sb.AppendLine("\r\n选项：");
                 foreach (var item in options)
                 {
-                    sb.AppendFormat("\t{0,-20}\t{1}\r\n", item.Key, item.Value);
+                    var defaultValue = item.Value.DefaultValue;
+                    if (defaultValue != null)
+                    {
+                        defaultValue = "；默认：" + defaultValue;
+                    }
+                    sb.AppendFormat("\t{0,-20}\t{1}{2}\r\n", item.Key, item.Value.Description, defaultValue);
+                }
+            }
+            if (Children != null && Children.Count > 0)
+            {
+                sb.AppendLine("\r\n命令：");
+                foreach (var child in Children)
+                {
+                    sb.AppendFormat("\t{0,-20}\t{1}\r\n", child.Key, child.Value.Description);
                 }
             }
             return sb.ToString();
