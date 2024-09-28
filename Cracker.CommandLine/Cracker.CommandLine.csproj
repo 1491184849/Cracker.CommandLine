@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<PackageId>Cracker.CommandLine</PackageId>
-		<Version>1.0.2</Version>
+		<Version>1.0.3</Version>
 		<Authors>hedonghua</Authors>
 		<Description>自定义命令行</Description>
 	</PropertyGroup>
